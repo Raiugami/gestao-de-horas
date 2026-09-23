@@ -1,6 +1,7 @@
 export type Day = { day:number; weekday:number; cents:number|null; entries:number[]; evidence:string; issue?:string; nonLabor:boolean };
 export type Person = { id:string; name:string; fileName:string; hash:string; days:Day[]; warnings:string[]; ocr:boolean; ocrReviewed:boolean; importedAt:string; pageCount:number; exceptions:Record<string,string>; corrections:Record<string,{cents:number;reason:string}> };
 export const normalize=(s:string)=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/\s+/g,' ').trim();
+export const displayName=(s:string)=>s.replace(/_+/g,' ').replace(/\s+/g,' ').trim();
 export const currentMonth=()=>{const now=new Date();return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`};
 export const monthDays=(month:string)=>{const [y,m]=month.split('-').map(Number);return new Date(y,m,0).getDate()};
 export const weekDay=(month:string,day:number)=>{const [y,m]=month.split('-').map(Number);return new Date(y,m-1,day).getDay()};
@@ -57,13 +58,3 @@ export function summary(p:Person,month:string,holidays:Record<string,string>,jir
 }
 export function csvCell(v:unknown){const text=String(v??'');return '"'+(/^[=+\-@\t\r]/.test(text)?"'":'')+text.replace(/"/g,'""')+'"'}
 export function escapeHtml(v:unknown){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!))}
-export function validSession(x:unknown):x is {version:1;month:string;people:Person[];holidays:Record<string,string>;periodConfirmed:boolean;jiraPeople?:{name:string;days:Record<string,number>;issues:string[];justifications?:Record<string,'atestado'|'ferias'>;total:number}[];jiraFileName?:string}{
- if(!x||typeof x!=='object')return false;const v=x as Record<string,unknown>;
- if(v.version!==1||typeof v.month!=='string'||!/^20\d{2}-(0[1-9]|1[0-2])$/.test(v.month)||!Array.isArray(v.people)||v.people.length>200||typeof v.periodConfirmed!=='boolean')return false;
- const obj=(z:unknown)=>!!z&&typeof z==='object'&&!Array.isArray(z);
- const reasons=(z:unknown)=>obj(z)&&Object.entries(z as object).every(([k,a])=>/^([1-9]|[12]\d|3[01])$/.test(k)&&typeof a==='string'&&a.length<=1000);
- if(!reasons(v.holidays))return false;
- if(v.jiraFileName!==undefined&&typeof v.jiraFileName!=='string')return false;
- if(v.jiraPeople!==undefined&&(!Array.isArray(v.jiraPeople)||!v.jiraPeople.every(p=>obj(p)&&typeof p.name==='string'&&typeof p.total==='number'&&obj(p.days)&&Object.entries(p.days as object).every(([k,a])=>/^([1-9]|[12]\d|3[01])$/.test(k)&&Number.isInteger(a)&&a>=0)&&Array.isArray(p.issues)&&p.issues.every((issue:unknown)=>typeof issue==='string')&&(p.justifications===undefined||(obj(p.justifications)&&Object.entries(p.justifications as object).every(([k,a])=>/^([1-9]|[12]\d|3[01])$/.test(k)&&(a==='atestado'||a==='ferias')))))))return false;
- return v.people.every(p=>obj(p)&&['id','name','fileName','hash','importedAt'].every(k=>typeof p[k]==='string')&&typeof p.ocr==='boolean'&&typeof p.ocrReviewed==='boolean'&&Number.isInteger(p.pageCount)&&Array.isArray(p.warnings)&&p.warnings.every((w:unknown)=>typeof w==='string')&&reasons(p.exceptions)&&obj(p.corrections)&&Object.entries(p.corrections).every(([k,c])=>/^([1-9]|[12]\d|3[01])$/.test(k)&&obj(c)&&Number.isInteger((c as {cents:number}).cents)&&(c as {cents:number}).cents>=0&&(c as {cents:number}).cents<=2400&&typeof (c as {reason:string}).reason==='string')&&Array.isArray(p.days)&&p.days.length===monthDays(v.month as string)&&new Set(p.days.map((d:Day)=>d.day)).size===p.days.length&&p.days.every((d:Day)=>Number.isInteger(d.day)&&d.day>=1&&d.day<=monthDays(v.month as string)&&(d.cents===null||Number.isInteger(d.cents)&&d.cents>=0&&d.cents<=2400)&&typeof d.evidence==='string'&&Array.isArray(d.entries)&&d.entries.every(n=>Number.isInteger(n)&&n>=0&&n<=2400)&&typeof d.nonLabor==='boolean'&&(d.issue===undefined||typeof d.issue==='string')));
-}

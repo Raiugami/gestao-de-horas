@@ -32,10 +32,10 @@ export function parseJiraWorkbook(data:ArrayBuffer,fileName:string):JiraImport{
  return {month,people:people.map(person=>{const days=person.issues.length?Object.fromEntries(dayColumns.map(({day})=>{const key=String(day);return [key,person.issues.reduce((sum,issue)=>sum+(issue.days[key]??0),0)]})):person.parent;const justifications:Record<string,JiraCategory>={};const justificationCategories:Record<string,JiraCategory[]>={};const justificationHours:Record<string,number>={};for(const issue of person.issues){const category=classifyIssue(issue.name);if(category)for(const [day,value] of Object.entries(issue.days))if(value>0){justifications[day]=justifications[day]??category;justificationCategories[day]=justificationCategories[day]??[];if(!justificationCategories[day].includes(category))justificationCategories[day].push(category);justificationHours[day]=(justificationHours[day]??0)+value;}}return {name:person.name,days,issues:person.issues.map(issue=>issue.name),issueDetails:person.issues,justifications,justificationCategories,justificationHours,total:Object.values(days).reduce((sum,value)=>sum+value,0)}}),fileName};
 }
 export async function readJiraFile(file:File){return parseJiraWorkbook(await file.arrayBuffer(),file.name);}
-const nameTokens=(value:string)=>normalize(value).replace(/,/g,' ').split(' ').filter(Boolean);
+const nameTokens=(value:string)=>normalize(value).replace(/[^A-Z0-9]+/g,' ').split(' ').filter(Boolean);
 const nameKey=(value:string)=>nameTokens(value).sort().join(' ');
 export function findJiraPerson(person:Pick<Person,'name'>,records:JiraPerson[]){
- const exact=normalize(person.name);const exactMatch=records.find(record=>normalize(record.name)===exact);if(exactMatch)return exactMatch;
+ const exact=nameKey(person.name);const exactMatch=records.find(record=>nameKey(record.name)===exact);if(exactMatch)return exactMatch;
  const pdfTokens=nameTokens(person.name);const scored=records.map(record=>{const jiraTokens=nameTokens(record.name);const pdfIncluded=pdfTokens.every(token=>jiraTokens.includes(token));const jiraIncluded=jiraTokens.every(token=>pdfTokens.includes(token));return {record,score:pdfIncluded?100+pdfTokens.length:jiraIncluded?90+jiraTokens.length:0};}).filter(result=>result.score>0).sort((a,b)=>b.score-a.score);
  if(!scored.length||scored[0].score===scored[1]?.score)return undefined;return scored[0].record;
 }

@@ -73,6 +73,11 @@ test('matches abbreviated PDF names to one complete Jira name',()=>{
  assert.equal(findJiraPerson({name:'Taina'},records)?.name,'Santos Silva, Taina');
 });
 
+test('normalizes underscores, punctuation and accents when matching Jira names',()=>{
+ const records=[{name:'Antonio, Gabriel',days:{},issues:[],justifications:{},total:0}];
+ assert.equal(findJiraPerson({name:'Gabríel_Antônio'},records)?.name,'Antonio, Gabriel');
+});
+
 test('does not guess when an abbreviated name is ambiguous',()=>{
  const records=[{name:'Ana Silva',days:{},issues:[],justifications:{},total:0},{name:'Ana Santos',days:{},issues:[],justifications:{},total:0}];
  assert.equal(findJiraPerson({name:'Ana'},records),undefined);

@@ -1,75 +1,63 @@
-# Conferência Dedicaciones
+# Gestão de horas
 
-Aplicação web estática para conferir a jornada diária de **8 horas em dias úteis** a partir dos PDFs exportados do Dedicaciones, com leitura local no navegador e relatório para gestão.
+Aplicação web para conferir os apontamentos mensais da equipe a partir dos PDFs do Dedicaciones. Ela organiza as horas por pessoa e por dia, destaca o que precisa de revisão e permite exportar o fechamento.
 
 <p align="center">
-  <a href="https://raiugami.github.io/conferencia-dedicaciones/">
-    <strong>Abrir aplicação</strong>
+  <a href="https://raiugami.github.io/gestao-de-horas/">
+    <strong>Abrir Gestão de horas</strong>
   </a>
   ·
-  <a href="app/README.md">
-    Documentação de desenvolvimento
-  </a>
+  <a href="app/README.md">Desenvolvimento e validação</a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/Raiugami/conferencia-dedicaciones/actions/workflows/pages.yml">
-    <img src="https://github.com/Raiugami/conferencia-dedicaciones/actions/workflows/pages.yml/badge.svg" alt="Status do build e publicação">
+  <a href="https://github.com/Raiugami/gestao-de-horas/actions/workflows/pages.yml">
+    <img src="https://github.com/Raiugami/gestao-de-horas/actions/workflows/pages.yml/badge.svg" alt="Status da publicação no GitHub Pages">
   </a>
 </p>
 
-## Visão geral
+## Como usar
 
-O Dedicaciones registra horas em projetos e páginas que podem aparecer em mais de um PDF. Esta aplicação reúne essas informações, soma os lançamentos por pessoa e dia e sinaliza o que precisa de revisão, sem alterar os documentos originais nem enviar dados da equipe para um servidor.
+1. Escolha o mês de referência.
+2. Adicione os PDFs dos colaboradores. A aplicação lê PDFs com texto e também pode ler páginas em imagem; leituras por imagem precisam ser conferidas.
+3. Se quiser comparar apontamentos e justificativas, importe uma exportação do Jira (`.csv`, `.xls` ou `.xlsx`).
+4. Revise os indicadores, os dias sinalizados e as exceções de jornada.
+5. Exporte o CSV detalhado ou o relatório para gestão.
 
-O fluxo foi pensado para o fechamento mensal:
+## Como as horas do Jira aparecem no calendário
 
-1. confirmar o mês da conferência;
-2. importar os PDFs da equipe;
-3. revisar a leitura, especialmente documentos processados por OCR;
-4. cadastrar feriados, férias e outras exceções justificadas;
-5. analisar divergências e exportar o relatório.
+As horas do Jira só substituem as do PDF no calendário quando a justificativa é **atestado ou férias** e os totais conferem. Nos demais casos, prevalece a leitura do PDF. A comparação do Jira é informativa: ela não aprova automaticamente uma ausência.
 
 ## Recursos
 
-- importação múltipla de PDFs;
-- leitura de PDFs de texto e OCR de páginas em imagem;
-- soma de lançamentos entre projetos e páginas;
-- conferência diária e mensal por pessoa;
-- calendário de dias úteis e sugestões de feriados nacionais;
-- exceções para feriados, férias e ausências justificadas;
-- confirmação humana para leituras por OCR e dados duvidosos;
-- correções manuais com preservação do valor original e da justificativa;
-- detecção de arquivos repetidos por hash;
-- importação local de exportações do Jira (`.csv`, `.xls` e `.xlsx`);
-- relatório HTML, CSV detalhado e sessão JSON para continuar depois.
-
-## Regras importantes
-
-- A meta é de **8 horas por dia útil**.
-- As horas decimais são somadas em centésimos: `7,84 + 0,16 = 8`.
-- Lançamentos em projetos diferentes e em páginas diferentes são somados.
-- `SEM VALIDAR` e `SIN VISAR` não são tratados como divergência de horas.
-- Dias ausentes, formatos desconhecidos e leituras duvidosas exigem revisão.
-- OCR nunca resulta em aprovação automática: a leitura precisa ser confirmada.
-- Feriados, férias e ausências só dispensam o dia depois de uma exceção ser registrada.
-- A data de impressão do PDF não confirma o mês dos apontamentos.
-- A comparação com o Jira é informativa e não justifica automaticamente uma falta no Dedicaciones.
+- Conferência de oito horas por dia útil, com soma de lançamentos entre páginas e projetos.
+- Leitura de PDFs de texto e de páginas em imagem, com confirmação humana para leituras por imagem.
+- Comparação opcional com exportações do Jira carregadas pelo usuário.
+- Busca, filtros, resumo da equipe e mapa diário.
+- Cadastro de feriados, férias e outras exceções justificadas.
+- Exportação de CSV detalhado e relatório para gestão.
+- Interface adaptável, tema escuro e guia de uso integrado.
 
 ## Privacidade
 
-O processamento dos PDFs, a extração de texto e o OCR acontecem no navegador. PDFs, texto extraído, sessões e dados da equipe não são enviados ao GitHub, a serviços de telemetria ou a serviços de inteligência artificial.
+Os PDFs, arquivos do Jira e dados da conferência são processados no navegador e não são enviados a um servidor. Os dados permanecem na memória da aba e são removidos ao limpar a conferência ou fechar/recarregar a página. O GitHub Pages publica os arquivos estáticos da aplicação, não os documentos importados.
 
-Os dados da sessão ficam apenas na memória da aba. Exporte a sessão JSON antes de fechar ou recarregar a página.
+## Desenvolvimento local
 
-## Uso local
-
-Requisitos:
-
-- Node.js `22.13` ou superior da série 22;
-- npm.
+Requisitos: Node.js `22.13` ou superior da série 22 e npm.
 
 ```bash
 cd app
 npm ci
 npm run dev
+```
+
+Para validar e gerar a versão estática:
+
+```bash
+npm test
+npx tsc --noEmit
+npm run build
+```
+
+O workflow em `.github/workflows/pages.yml` prepara os caminhos do projeto e publica `app/dist/client` no GitHub Pages quando as mudanças chegam à branch `main`.
