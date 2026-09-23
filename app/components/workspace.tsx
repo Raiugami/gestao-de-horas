@@ -152,7 +152,7 @@ export function Workspace({
           <ol className="guide-steps">
             <li><span>01</span><div><strong>Adicione os apontamentos</strong><p>Na Conferência mensal, selecione o mês e importe os PDFs. Se precisar comparar justificativas e horas, importe também o arquivo do Jira.</p></div></li>
             <li><span>02</span><div><strong>Revise a equipe</strong><p>Use a busca, os filtros e o mapa diário para localizar divergências. Clique em uma pessoa para conferir os lançamentos e ajustar leituras.</p></div></li>
-            <li><span>03</span><div><strong>Registre exceções</strong><p>Em Feriados e exceções, cadastre feriados, férias ou ausências que alterem a jornada esperada.</p></div></li>
+            <li><span>03</span><div><strong>Registre exceções</strong><p>Em Férias e exceções, cadastre feriados, férias ou ausências que alterem a jornada esperada.</p></div></li>
             <li><span>04</span><div><strong>Exporte o fechamento</strong><p>Baixe o CSV detalhado ou o relatório para gestão ao concluir a conferência.</p></div></li>
           </ol>
           <aside className="guide-jira-note">
