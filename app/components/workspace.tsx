@@ -13,6 +13,7 @@ import {
   Sun,
   Trash2,
   Users,
+  X,
 } from 'lucide-react';
 import { assetPath } from '@/lib/asset-path';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -49,6 +50,10 @@ export function Workspace({
   }, [dark]);
   function toggleTheme() {
     setDark((value) => !value);
+  }
+  function clearAndClose() {
+    onClear();
+    setClearOpen(false);
   }
   return (
     <div className="workspace">
@@ -164,13 +169,14 @@ export function Workspace({
       </Dialog>
       <AlertDialog open={clearOpen} onOpenChange={setClearOpen}>
         <AlertDialogContent className="clear-data-dialog">
+          <AlertDialogCancel className="clear-data-close" aria-label="Fechar confirmação"><X size={16} /></AlertDialogCancel>
           <AlertDialogHeader>
             <AlertDialogTitle>Limpar os dados da conferência?</AlertDialogTitle>
             <AlertDialogDescription>Os PDFs importados, os dados do Jira, as exceções e os ajustes serão removidos desta tela. Esta ação não pode ser desfeita.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Manter dados</AlertDialogCancel>
-            <AlertDialogAction className="clear-data-confirm" onClick={onClear}>Limpar dados</AlertDialogAction>
+            <AlertDialogAction className="clear-data-confirm" onClick={clearAndClose}>Limpar dados</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

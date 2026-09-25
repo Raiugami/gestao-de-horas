@@ -392,6 +392,23 @@ a:focus-visible {
 .clear-data-dialog {
   max-width: 440px !important;
 }
+.clear-data-close {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+}
+.clear-data-close:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
 .clear-data-confirm {
   background: #b42335 !important;
   color: #fff !important;
