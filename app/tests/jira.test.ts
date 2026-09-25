@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as XLSX from 'xlsx';
-import {parseJiraWorkbook,findJiraPerson} from '../lib/jira';
+import {parseJiraWorkbook,findJiraPerson,jiraCategoriesForDay,jiraJustificationHoursForDay} from '../lib/jira';
 
 function workbook(rows:unknown[][]){
  const sheet=XLSX.utils.aoa_to_sheet(rows);const book=XLSX.utils.book_new();XLSX.utils.book_append_sheet(book,sheet,'Sheet0');
@@ -27,15 +27,37 @@ test('rejects exports without a recognizable month',()=>{
 });
 
 test('classifies Holidays as vacation evidence',()=>{
- const data=workbook([['September-26',null,null,null,'01'],['Name','Issue','Total','%','Tue'],['Pessoa',null,8,100,null],[null,'VBRAMO-9 - Holidays',8,100,8]]);
+ const data=workbook([['September-26',null,null,null,'01'],['Name','Issue','Total','%','Tue'],['Pessoa',null,8,100,null],[null,'VBRAMO-12345 - Holidays',8,100,8]]);
  const result=parseJiraWorkbook(data.buffer.slice(data.byteOffset,data.byteOffset+data.byteLength),'export.xls');
  assert.equal(result.people[0].justifications['1'],'ferias');
 });
 
-test('prioritizes vacation when the issue also says absence',()=>{
+test('does not classify covering a coworker’s vacation as the assignee’s own vacation',()=>{
+ const data=workbook([['September-26',null,null,null,'01'],['Name','Issue','Total','%','Tue'],['Sibele Nepomuceno',null,8,100,null],[null,'VBRAMO-2831 - Cobrir Férias Sibele',8,100,8]]);
+ const result=parseJiraWorkbook(data.buffer.slice(data.byteOffset,data.byteOffset+data.byteLength),'export.xls');
+ const person=result.people[0];
+ assert.equal(person.days['1'],800);
+ assert.equal(person.justifications['1'],undefined);
+ assert.equal(person.justificationCategories?.['1'],undefined);
+ assert.equal(person.justificationHours?.['1'],undefined);
+ assert.deepEqual(jiraCategoriesForDay(person,'1'),[]);
+});
+
+test('issue details replace stale cached vacation categories and hours',()=>{
+ const data=workbook([['September-26',null,null,null,'01'],['Name','Issue','Total','%','Tue'],['Sibele Nepomuceno',null,8,100,null],[null,'VBRAMO-2831 - Cobrir Férias Sibele',8,100,8]]);
+ const result=parseJiraWorkbook(data.buffer.slice(data.byteOffset,data.byteOffset+data.byteLength),'export.xls');
+ const person=result.people[0];
+ person.justifications['1']='ferias';
+ person.justificationCategories={'1':['ferias']};
+ person.justificationHours={'1':800};
+ assert.deepEqual(jiraCategoriesForDay(person,'1'),[]);
+ assert.equal(jiraJustificationHoursForDay(person,'1'),0);
+});
+
+test('does not guess the category from noncanonical vacation wording',()=>{
  const data=workbook([['September-26',null,null,null,'01'],['Name','Issue','Total','%','Tue'],['Pessoa',null,8,100,null],[null,'VBRAMO-9 - Ausência: Férias',8,100,8]]);
  const result=parseJiraWorkbook(data.buffer.slice(data.byteOffset,data.byteOffset+data.byteLength),'export.xls');
- assert.equal(result.people[0].justifications['1'],'ferias');
+ assert.equal(result.people[0].justifications['1'],undefined);
 });
 
 test('classifies the real Camilly absence issue format',()=>{
@@ -59,7 +81,7 @@ test('keeps atestado and vacation categories on the same day',()=>{
   ['Name','Issue','Total','%','Tue'],
   ['Pessoa',null,8,100,null],
   [null,'VBRAMO-1 - Ausência: Pessoa',2,25,2],
-  [null,'VBRAMO-2 - Holidays: Pessoa',2,25,2],
+  [null,'VBRAMO-12345 - Holidays',2,25,2],
   [null,'VBRAMO-3 - Projeto',4,50,4]
  ]);
  const result=parseJiraWorkbook(data.buffer.slice(data.byteOffset,data.byteOffset+data.byteLength),'export.xls');
