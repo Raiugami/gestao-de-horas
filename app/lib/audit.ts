@@ -1,7 +1,7 @@
-export type Day = { day:number; weekday:number; cents:number|null; entries:number[]; evidence:string; issue?:string; nonLabor:boolean };
+export type Day = { day:number; weekday:number; cents:number|null; entries:number[]; evidence:string; issue?:string; nonLabor:boolean; vacation?:boolean };
 export type Person = { id:string; name:string; fileName:string; hash:string; days:Day[]; warnings:string[]; ocr:boolean; ocrReviewed:boolean; importedAt:string; pageCount:number; exceptions:Record<string,string>; corrections:Record<string,{cents:number;reason:string}> };
 export const normalize=(s:string)=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/\s+/g,' ').trim();
-export const displayName=(s:string)=>s.replace(/_+/g,' ').replace(/\s+/g,' ').trim();
+export const displayName=(s:string)=>s.replace(/\.pdf$/i,'').replace(/[_-]+/g,' ').replace(/([A-ZÀ-ÖØ-Þ][a-zà-öø-ÿ]+?)(de|da|do|dos|das)(?=[A-ZÀ-ÖØ-Þ])/g,'$1 $2 ').replace(/([a-zà-öø-ÿ])([A-ZÀ-ÖØ-Þ])/g,'$1 $2').replace(/\bDEDICACIONES(?:\s+.*)?$/i,'').replace(/\s+(?:SET|SEP|SEPT|SETEMBRO|SEPTIEMBRE)[\s_-]*\d{2,4}$/i,'').replace(/\s+/g,' ').trim().replace(/\b(De|Da|Do|Dos|Das)\b/g,word=>word.toLowerCase());
 export const currentMonth=()=>{const now=new Date();return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`};
 export const monthDays=(month:string)=>{const [y,m]=month.split('-').map(Number);return new Date(y,m,0).getDate()};
 export const weekDay=(month:string,day:number)=>{const [y,m]=month.split('-').map(Number);return new Date(y,m-1,day).getDay()};
@@ -25,9 +25,10 @@ export function parsePages(pages:string[],month:string){
   const evidence=text.slice(marker.index!+marker[0].length,i+1<markers.length?markers[i+1].index:text.length).trim();
   if(day<1||day>numDays){warnings.push(`Dia ${day} fora do mês selecionado.`);continue;}
   if(seen.has(day)){warnings.push(`Dia ${day} repetido no PDF. Verifique se há mais de um período.`);continue;}seen.add(day);
-  const matches=[...evidence.matchAll(/(?:^|\s)(\d+(?:[.,]\d+)?)\s+(SEM\s+(?:VALIDAR|IMPUTAR)|SIN\s+(?:VISAR|IMPUTAR)|VALIDAD[OA]S?|VISAD[OA]S?|APROVAD[OA]S?)(?![A-Z])/g)];
-  const statusCount=[...evidence.matchAll(/\b(?:SEM\s+(?:VALIDAR|IMPUTAR)|SIN\s+(?:VISAR|IMPUTAR)|VALIDAD[OA]S?|VISAD[OA]S?|APROVAD[OA]S?)\b/g)].length;
+  const matches=[...evidence.matchAll(/(?:^|\s)(\d+(?:[.,]\d+)?)\s+(SEM\s+(?:VALIDAR|IMPUTAR)|SIN\s+(?:VISAR|IMPUTAR)|VALIDAD[OA]S?|VISAD[OA]S?|APROVAD[OA]S?|FERIAS|F(?:E|\uFFFD)RIAS)(?![A-Z])/g)];
+  const statusCount=[...evidence.matchAll(/\b(?:SEM\s+(?:VALIDAR|IMPUTAR)|SIN\s+(?:VISAR|IMPUTAR)|VALIDAD[OA]S?|VISAD[OA]S?|APROVAD[OA]S?|FERIAS|F(?:E|\uFFFD)RIAS)\b/g)].length;
   const nonLabor=/\b(?:NA[OG0] LABORAL|NO LABORABLE)\b/.test(evidence);
+  const vacation=/\b(?:FERIAS|F(?:E|\uFFFD)RIAS|VACACIONES)\b/.test(evidence);
   const entries=matches.map(m=>toCents(m[1]));
   let cents:number|null=entries.length&&entries.every(x=>x!==null)?entries.reduce<number>((a,b)=>a+(b??0),0):nonLabor?0:null;
   let issue:string|undefined;
@@ -35,7 +36,7 @@ export function parsePages(pages:string[],month:string){
   if(cents!==null&&cents>2400){cents=null;issue='Total diário fora do intervalo esperado para leitura.';}
   if(weekdays[marker[2]]!==weekDay(month,day)){issue='Dia da semana incompatível com o mês selecionado.';warnings.push('O calendário do PDF não corresponde ao mês selecionado.');}
   if(i>0&&day<Number(markers[i-1][1]))warnings.push('A sequência de dias do PDF está fora de ordem.');
-  days.push({day,weekday:weekdays[marker[2]],cents,entries:entries.filter((x):x is number=>x!==null),evidence,issue,nonLabor});
+  days.push({day,weekday:weekdays[marker[2]],cents,entries:entries.filter((x):x is number=>x!==null),evidence,issue,nonLabor,vacation});
  }
  for(let day=1;day<=numDays;day++)if(!seen.has(day))days.push({day,weekday:weekDay(month,day),cents:null,entries:[],evidence:'Dia não identificado no PDF.',issue:'Dia não identificado no PDF.',nonLabor:false});
  if(seen.size!==numDays)warnings.push(`${seen.size} de ${numDays} dias reconhecidos. Os demais precisam de revisão.`);
@@ -44,10 +45,10 @@ export function parsePages(pages:string[],month:string){
 }
 export function dayResult(p:Person,d:Day,month:string,holidays:Record<string,string>){
  const exception=p.exceptions[d.day]||holidays[d.day];const weekend=[0,6].includes(weekDay(month,d.day));const correction=p.corrections[d.day];const cents=correction?.cents??d.cents;
- const expected=exception||weekend?0:800;
+ const expected=exception||weekend||d.nonLabor||d.vacation?0:800;
  const uncertain=(!correction&&(cents===null||!!d.issue))||(p.ocr&&!p.ocrReviewed);
- const status=uncertain?'review':exception||weekend?'excluded':cents===800?'ok':'pending';
- const reason=exception||(weekend?'Fim de semana':uncertain?'Leitura a revisar':cents===800?'8 horas conferidas':cents===0?'Sem horas lançadas':cents!<800?'Abaixo de 8 horas':'Acima de 8 horas');
+ const status=uncertain?'review':exception||weekend||d.nonLabor||d.vacation?'excluded':cents===800?'ok':'pending';
+ const reason=exception||(d.vacation?'Férias lançadas no PDF':d.nonLabor?'Dia não laboral no PDF':weekend?'Fim de semana':uncertain?'Leitura a revisar':cents===800?'8 horas conferidas':cents===0?'Sem horas lançadas':cents!<800?'Abaixo de 8 horas':'Acima de 8 horas');
  return {cents,expected,status,reason,correction,weekend,exception};
 }
 export type JiraDayAdjustment={hours:number;jiraHours:number};

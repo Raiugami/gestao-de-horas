@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import {normalize,type Person,dayResult} from './audit';
+import {normalize,displayName,type Person,dayResult} from './audit';
 
 export type JiraCategory='atestado'|'ferias';
 export type JiraIssue = {name:string;days:Record<string,number>};
@@ -32,7 +32,7 @@ export function parseJiraWorkbook(data:ArrayBuffer,fileName:string):JiraImport{
  return {month,people:people.map(person=>{const days=person.issues.length?Object.fromEntries(dayColumns.map(({day})=>{const key=String(day);return [key,person.issues.reduce((sum,issue)=>sum+(issue.days[key]??0),0)]})):person.parent;const justifications:Record<string,JiraCategory>={};const justificationCategories:Record<string,JiraCategory[]>={};const justificationHours:Record<string,number>={};for(const issue of person.issues){const category=classifyIssue(issue.name);if(category)for(const [day,value] of Object.entries(issue.days))if(value>0){justifications[day]=justifications[day]??category;justificationCategories[day]=justificationCategories[day]??[];if(!justificationCategories[day].includes(category))justificationCategories[day].push(category);justificationHours[day]=(justificationHours[day]??0)+value;}}return {name:person.name,days,issues:person.issues.map(issue=>issue.name),issueDetails:person.issues,justifications,justificationCategories,justificationHours,total:Object.values(days).reduce((sum,value)=>sum+value,0)}}),fileName};
 }
 export async function readJiraFile(file:File){return parseJiraWorkbook(await file.arrayBuffer(),file.name);}
-const nameTokens=(value:string)=>normalize(value).replace(/[^A-Z0-9]+/g,' ').split(' ').filter(Boolean);
+const nameTokens=(value:string)=>normalize(displayName(value)).replace(/[^A-Z0-9]+/g,' ').split(' ').filter(Boolean);
 const nameKey=(value:string)=>nameTokens(value).sort().join(' ');
 export function findJiraPerson(person:Pick<Person,'name'>,records:JiraPerson[]){
  const exact=nameKey(person.name);const exactMatch=records.find(record=>nameKey(record.name)===exact);if(exactMatch)return exactMatch;

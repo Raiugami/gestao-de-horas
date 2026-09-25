@@ -73,6 +73,12 @@ test('matches abbreviated PDF names to one complete Jira name',()=>{
  assert.equal(findJiraPerson({name:'Taina'},records)?.name,'Santos Silva, Taina');
 });
 
+test('matches Jira names after splitting joined particles and removing PDF suffixes',()=>{
+ const records=[{name:'Camilly de Barros',days:{},issues:[],justifications:{},total:0},{name:'Guilherme Murilo',days:{},issues:[],justifications:{},total:0}];
+ assert.equal(findJiraPerson({name:'CamillydeBarros.pdf'},records)?.name,'Camilly de Barros');
+ assert.equal(findJiraPerson({name:'Guilherme Murilo Dedicaciones SET26'},records)?.name,'Guilherme Murilo');
+});
+
 test('normalizes underscores, punctuation and accents when matching Jira names',()=>{
  const records=[{name:'Antonio, Gabriel',days:{},issues:[],justifications:{},total:0}];
  assert.equal(findJiraPerson({name:'Gabríel_Antônio'},records)?.name,'Antonio, Gabriel');
