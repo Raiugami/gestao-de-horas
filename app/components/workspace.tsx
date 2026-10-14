@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
-import Image from 'next/image';
 import {
   ArrowUpRight,
   BookOpen,
@@ -15,9 +14,17 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import { assetPath } from '@/lib/asset-path';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+
+function MinsaitLogo() {
+  return (
+    <svg className="sidebar-logo" viewBox="0 0 185 18" aria-hidden="true" focusable="false">
+      <path d="M0 17.5486L.9694 17.8055s11.8576-3.614 15.4669-3.8603c3.6091.2463 15.467 3.8603 15.467 3.8603l.9694-.2569s-10.3126-7.0864-16.4364-7.2239C10.3125 10.4622 0 17.5486 0 17.5486ZM32.8727.4526l-.9691-.2568s-11.8579 3.614-15.467 3.8603C12.827 3.8098.9691.1958.9691.1958L0 .4526s10.3125 7.0865 16.4366 7.224c6.1235-.1378 16.4355-7.224 16.4355-7.224Z" fill="currentColor" />
+      <path d="M47.195 4.804h-.908v12.35h-4.223V1.262h7.787l3.837 9.104h1.362l3.814-9.104h7.788v15.892h-4.223V4.804h-.908l-3.996 9.104h-6.311l-4.019-9.104Zm24.451-3.542h4.223v15.892h-4.223V1.262Zm9.217 0h7.56l8.264 12.35h.908V1.262h4.223v15.892h-7.56l-8.264-12.35h-.908v12.35h-4.223V1.262Zm25.495 15.892v-3.542h14.916c.885 0 1.385-.5 1.385-1.385s-.5-1.385-1.385-1.385h-10.012c-3.338 0-5.358-1.793-5.358-4.79s2.02-4.79 5.358-4.79h14.598v3.542h-14.598c-.795 0-1.249.454-1.249 1.249s.454 1.249 1.249 1.249h10.012c3.451 0 5.494 1.839 5.494 4.927s-2.043 4.926-5.494 4.926h-14.916v-.001Zm22.203-.091 9.467-15.801h5.993l9.467 15.801v.091h-4.699l-1.703-2.951h-12.123l-1.702 2.951h-4.7v-.091Zm16.505-6.402-3.36-5.857h-1.362l-3.36 5.857h8.082Zm11.737-9.399h4.223v15.892h-4.223V1.262Zm15.869 3.542h-8.105V1.262h20.432v3.542h-8.104v12.35h-4.223V4.804Z" fill="currentColor" />
+    </svg>
+  );
+}
 
 export function useSection() {
   return useSyncExternalStore(
@@ -97,13 +104,7 @@ export function Workspace({
           className="sidebar-brand"
           aria-label="Minsait — início"
         >
-          <Image
-            src={assetPath('/brand/minsait-logo.svg')}
-            alt="Minsait"
-            width={166}
-            height={24}
-            unoptimized
-          />
+          <MinsaitLogo />
         </a>
         <div className="workspace-label">
           WORKSPACE<span>Gestão de horas</span>
