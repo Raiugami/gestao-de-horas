@@ -1941,3 +1941,49 @@ main {
   .gm-file { padding: 3px 8px; }
   .guide-privacy, .gm-note { display: none; }
 }
+
+/* Celular (360 a 430 px): alvos de toque maiores e lista da equipe em cartões. */
+@media (max-width: 560px) {
+  .btn,
+  .filter-chips button,
+  .rowbtn,
+  .sidebar nav a,
+  .sidebar nav button,
+  .sidebar-brand { min-height: 44px; }
+  .filter-chips button { padding-block: 8px; }
+  [data-slot='tabs-trigger'],
+  [data-slot='sheet-close'],
+  [data-slot='dialog-close'],
+  [data-slot='button'][class*='size-7'],
+  [data-slot='button'][data-size='icon'] { min-height: 44px; }
+  [data-slot='dialog-close'],
+  [data-slot='sheet-close'] { min-width: 44px; }
+  .rowbtn { text-align: left; }
+  .daybutton { min-height: 44px; min-width: 40px; }
+  .daycell { padding-inline: 3px; }
+  .table-wrap { -webkit-overflow-scrolling: touch; }
+  .table-wrap tbody td:first-child,
+  .table-wrap thead th:first-child { position: sticky; left: 0; z-index: 1; background: var(--card); min-width: 118px; max-width: 118px; padding-left: 12px !important; box-shadow: 1px 0 0 var(--border); }
+  .table-wrap thead th:first-child { background: var(--muted); }
+  .table-wrap tbody td:first-child .rowbtn { display: block; white-space: normal; overflow-wrap: anywhere; line-height: 1.2; min-height: 0; padding-block: 6px; }
+
+  [data-slot='table-container']:not(.table-wrap *) > table,
+  [data-slot='table-container']:not(.table-wrap *) > table tbody { display: block; }
+  [data-slot='table-container']:not(.table-wrap *) thead { display: none; }
+  [data-slot='table-container']:not(.table-wrap *) tbody tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  [data-slot='table-container']:not(.table-wrap *) tbody td { padding: 0 !important; height: auto; min-width: 0; white-space: normal; }
+  [data-slot='table-container']:not(.table-wrap *) tbody td:nth-child(1) { grid-column: 1 / -1; }
+  [data-slot='table-container']:not(.table-wrap *) tbody td:nth-child(5) { display: none; }
+  [data-slot='table-container']:not(.table-wrap *) tbody td:nth-child(n + 2):nth-child(-n + 4)::before {
+    display: block; font-size: 11px; color: var(--muted-foreground); margin-bottom: 2px;
+  }
+  [data-slot='table-container']:not(.table-wrap *) tbody td:nth-child(2)::before { content: 'Dias de 8 h'; }
+  [data-slot='table-container']:not(.table-wrap *) tbody td:nth-child(3)::before { content: 'Divergências'; }
+  [data-slot='table-container']:not(.table-wrap *) tbody td:nth-child(4)::before { content: 'Situação'; }
+}
