@@ -12,6 +12,7 @@
     "lint": "oxlint",
     "format": "oxfmt",
     "prebuild": "node scripts/prepare-assets.mjs",
+    "build:single": "node scripts/prepare-assets.mjs && node scripts/build-single.mjs",
     "test": "tsx --test tests/*.test.ts"
   },
   "dependencies": {

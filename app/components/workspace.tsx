@@ -14,6 +14,7 @@ import {
   Users,
   X,
 } from 'lucide-react';
+import { GuideMotion } from '@/components/guide-motion';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
@@ -50,6 +51,7 @@ export function Workspace({
 }) {
   const [dark, setDark] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
+  const [guideStep, setGuideStep] = useState(0);
   const [clearOpen, setClearOpen] = useState(false);
   const section = useSection();
   useEffect(() => {
@@ -120,7 +122,7 @@ export function Workspace({
           </a>
         </nav>
         <div className="sidebar-bottom">
-          <button className="open-session guide-button" onClick={() => setGuideOpen(true)}>
+          <button className="open-session guide-button" onClick={() => { setGuideStep(0); setGuideOpen(true); }}>
             <BookOpen size={18} />
             Guia de uso
           </button>
@@ -155,11 +157,12 @@ export function Workspace({
             <DialogTitle>Guia de uso</DialogTitle>
             <DialogDescription>Um roteiro rápido para fechar o mês da equipe.</DialogDescription>
           </DialogHeader>
+          <GuideMotion onStep={setGuideStep} />
           <ol className="guide-steps">
-            <li><span>01</span><div><strong>Adicione os apontamentos</strong><p>Na Conferência mensal, selecione o mês e importe os PDFs. Se precisar comparar justificativas e horas, importe também o arquivo do Jira.</p></div></li>
-            <li><span>02</span><div><strong>Revise a equipe</strong><p>Use a busca, os filtros e o mapa diário para localizar divergências. Clique em uma pessoa para conferir os lançamentos e ajustar leituras.</p></div></li>
-            <li><span>03</span><div><strong>Registre exceções</strong><p>Em Férias e exceções, cadastre feriados, férias ou ausências que alterem a jornada esperada.</p></div></li>
-            <li><span>04</span><div><strong>Exporte o fechamento</strong><p>Baixe o CSV detalhado ou o relatório para gestão ao concluir a conferência.</p></div></li>
+            <li data-active={guideStep === 0}><span>01</span><div><strong>Adicione os apontamentos</strong><p>Na Conferência mensal, selecione o mês e importe os PDFs. Se precisar comparar justificativas e horas, importe também o arquivo do Jira.</p></div></li>
+            <li data-active={guideStep === 1}><span>02</span><div><strong>Revise a equipe</strong><p>Use a busca, os filtros e o mapa diário para localizar divergências. Clique em uma pessoa para conferir os lançamentos e ajustar leituras.</p></div></li>
+            <li data-active={guideStep === 2}><span>03</span><div><strong>Registre exceções</strong><p>Em Férias e exceções, cadastre feriados, férias ou ausências que alterem a jornada esperada.</p></div></li>
+            <li data-active={guideStep === 3}><span>04</span><div><strong>Exporte o fechamento</strong><p>Baixe o CSV detalhado ou o relatório para gestão ao concluir a conferência.</p></div></li>
           </ol>
           <aside className="guide-jira-note">
             <strong>Horas do Jira no calendário</strong>

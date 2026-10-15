@@ -38,3 +38,15 @@ npm run build
 ```
 
 O build estático fica em `dist/client`. Para preparar os caminhos usados no GitHub Pages, defina `NEXT_PUBLIC_BASE_PATH` como o caminho do repositório e execute `node scripts/prepare-pages.mjs`. O workflow do repositório faz essa preparação automaticamente.
+
+## Versão em arquivo único (opcional)
+
+Para abrir a aplicação direto pelo navegador, sem servidor nem internet (por exemplo, a partir de uma pasta de rede ou um pendrive), gere um único HTML:
+
+```bash
+npm run build:single
+```
+
+O arquivo `dist-single/gestao-de-horas.html` (cerca de 18 MB) embute JavaScript, CSS, fontes, logo, o leitor de PDF e o OCR com o modelo de idioma, e abre por `file://`. Ele é independente do build do GitHub Pages: o script `scripts/build-single.mjs` usa uma entrada própria (`single/`) e não altera `dist/client`. A pasta `dist-single/` não é versionada.
+
+Limitações: o arquivo é grande por causa do modelo de OCR (cerca de 11 MB) e do núcleo do Tesseract; a primeira leitura de uma página em imagem leva alguns segundos a mais para preparar o OCR; atualizações exigem gerar e distribuir o arquivo novamente. Os workers são carregados a partir de blobs, pois o navegador não permite workers de módulo em `file://`. A validação foi feita no Chrome; Edge deve se comportar igual, mas não foi testado.
