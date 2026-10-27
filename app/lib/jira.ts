@@ -1,7 +1,7 @@
 import * as XLSX from 'xlsx';
 import {normalize,displayName,type Person,dayResult} from './audit';
 
-export type JiraCategory='atestado'|'ferias'|'treinamento';
+export type JiraCategory='atestado'|'ferias';
 export type JiraIssue = {name:string;days:Record<string,number>};
 export type JiraPerson = {name:string;days:Record<string,number>;issues:string[];issueDetails?:JiraIssue[];justifications:Record<string,JiraCategory>;justificationCategories?:Record<string,JiraCategory[]>;justificationHours?:Record<string,number>;total:number};
 export type JiraImport = {month:string;people:JiraPerson[];fileName:string};
@@ -9,7 +9,7 @@ export type JiraImport = {month:string;people:JiraPerson[];fileName:string};
 const months:Record<string,string>={january:'01',february:'02',march:'03',april:'04',may:'05',june:'06',july:'07',august:'08',september:'09',october:'10',november:'11',december:'12',janeiro:'01',fevereiro:'02',marco:'03',abril:'04',maio:'05',junho:'06',julho:'07',agosto:'08',setembro:'09',outubro:'10',novembro:'11',dezembro:'12'};
 const text=(value:unknown)=>String(value??'').trim();
 const cents=(value:unknown)=>{if(typeof value==='number'&&Number.isFinite(value))return Math.round(value*100);const valueText=text(value).replace(',','.');if(!valueText)return 0;const number=Number(valueText);return Number.isFinite(number)?Math.round(number*100):0};
-const classifyIssue=(value:string):JiraCategory|undefined=>{const issue=normalize(value);if(/^VBRAMO-\d+\s*-\s*HOLIDAYS$/.test(issue))return 'ferias';if(/\b(?:FERIAS|VACACIONES|HOLIDAYS)\b/.test(issue))return undefined;return /\b(?:AUSENCIA|ATESTAD|CERTIFICADO MEDICO)\b/.test(issue)?'atestado':/\b(?:TRAINING|TREINAMENTOS?|CURSOS?|CAPACITACAO)\b/.test(issue)?'treinamento':undefined};
+const classifyIssue=(value:string):JiraCategory|undefined=>{const issue=normalize(value);if(/^VBRAMO-\d+\s*-\s*HOLIDAYS$/.test(issue))return 'ferias';if(/\b(?:FERIAS|VACACIONES|HOLIDAYS)\b/.test(issue))return undefined;return /\b(?:AUSENCIA|ATESTAD|CERTIFICADO MEDICO)\b/.test(issue)?'atestado':undefined};
 export function jiraCategoriesForDay(person:JiraPerson|undefined,day:string):JiraCategory[]{if(!person)return [];if(person.issueDetails!==undefined)return Array.from(new Set(person.issueDetails.map(issue=>issue.days[day]>0?classifyIssue(issue.name):undefined).filter((category):category is JiraCategory=>Boolean(category))));return person.justificationCategories?.[day]??(person.justifications?.[day]?[person.justifications[day]]:[]);}
 export function jiraJustificationHoursForDay(person:JiraPerson|undefined,day:string){if(!person)return 0;if(person.issueDetails)return person.issueDetails.reduce((sum,issue)=>sum+(issue.days[day]>0&&classifyIssue(issue.name)?issue.days[day]:0),0);return person.justificationHours?.[day]??0;}
 function parseMonth(value:unknown){
