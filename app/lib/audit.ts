@@ -25,8 +25,8 @@ export function parsePages(pages:string[],month:string){
   const evidence=text.slice(marker.index!+marker[0].length,i+1<markers.length?markers[i+1].index:text.length).trim();
   if(day<1||day>numDays){warnings.push(`Dia ${day} fora do mês selecionado.`);continue;}
   if(seen.has(day)){warnings.push(`Dia ${day} repetido no PDF. Verifique se há mais de um período.`);continue;}seen.add(day);
-  const matches=[...evidence.matchAll(/(?:^|\s)(\d+(?:[.,]\d+)?)\s+(SEM\s+(?:VALIDAR|IMPUTAR)|SIN\s+(?:VISAR|IMPUTAR)|VALIDAD[OA]S?|VISAD[OA]S?|APROVAD[OA]S?|FERIAS|F(?:E|\uFFFD)RIAS)(?![A-Z])/g)];
-  const statusCount=[...evidence.matchAll(/\b(?:SEM\s+(?:VALIDAR|IMPUTAR)|SIN\s+(?:VISAR|IMPUTAR)|VALIDAD[OA]S?|VISAD[OA]S?|APROVAD[OA]S?|FERIAS|F(?:E|\uFFFD)RIAS)\b/g)].length;
+  const matches=[...evidence.matchAll(/(?:^|\s)(\d+(?:[.,]\d+)?)\s+(SEM\s+(?:VALIDAR|IMPUTAR)|SIN\s+(?:VISAR|IMPUTAR)|VALIDAD[OA]S?|VISAD[OA]S?|APROVAD[OA]S?|FERIAS|F(?:E|\uFFFD)RIAS|FORMA[A-Z\uFFFD]{0,4})(?![A-Z])/g)];
+  const statusCount=[...evidence.matchAll(/\b(?:SEM\s+(?:VALIDAR|IMPUTAR)|SIN\s+(?:VISAR|IMPUTAR)|VALIDAD[OA]S?|VISAD[OA]S?|APROVAD[OA]S?|FERIAS|F(?:E|\uFFFD)RIAS|FORMA[A-Z\uFFFD]{0,4})(?![A-Z])/g)].length;
   const nonLabor=/\b(?:NA[OG0] LABORAL|NO LABORABLE)\b/.test(evidence);
   const vacation=/\b(?:FERIAS|F(?:E|\uFFFD)RIAS|VACACIONES)\b/.test(evidence);
   const entries=matches.map(m=>toCents(m[1]));
