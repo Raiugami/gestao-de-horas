@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as XLSX from 'xlsx';
-import {parseJiraWorkbook,findJiraPerson,jiraCategoriesForDay,jiraJustificationHoursForDay} from '../lib/jira';
+import {parseJiraWorkbook,findJiraPerson,jiraDifferences,jiraCategoriesForDay,jiraJustificationHoursForDay} from '../lib/jira';
 
 function workbook(rows:unknown[][]){
  const sheet=XLSX.utils.aoa_to_sheet(rows);const book=XLSX.utils.book_new();XLSX.utils.book_append_sheet(book,sheet,'Sheet0');
@@ -117,4 +117,11 @@ test('matches Jira names truncated by the export and ignores total rows',()=>{
  assert.equal(result.people.length,2);
  assert.equal(findJiraPerson({name:'Gabriel Aguiar'},result.people)?.name,'Antonio Do Espirito Santo De A, Gabriel');
  assert.equal(findJiraPerson({name:'Gabriel Souza'},result.people),undefined);
+});
+
+test('days with hours in the PDF and none in Jira are not flagged',()=>{
+ const person={name:'Pessoa',days:[{day:1,weekday:1,cents:800,entries:[800],evidence:'',nonLabor:false},{day:2,weekday:2,cents:700,entries:[700],evidence:'',nonLabor:false}],warnings:[],ocr:false,ocrReviewed:false,exceptions:{},corrections:{}} as any;
+ const jira={name:'Pessoa',days:{'1':0,'2':800},issues:[],justifications:{},total:800};
+ const diff=jiraDifferences(person,jira,'2026-09',{});
+ assert.deepEqual(diff.days,[2]);assert.equal(diff.missingInJira,0);
 });
