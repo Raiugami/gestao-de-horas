@@ -26,6 +26,7 @@ export function parseJiraWorkbook(data:ArrayBuffer,fileName:string):JiraImport{
  const people:{name:string;parent:Record<string,number>;issues:{name:string;days:Record<string,number>}[]}[]=[];let current:typeof people[number]|undefined;
  for(const row of rows.slice(headerIndex+1)){
   const name=text(row[0]);const issue=text(row[1]);
+  if(/\bhours total:?\s*$/i.test(name)){current=undefined;continue;}
   if(current&&issue){current.issues.push({name:issue,days:Object.fromEntries(dayColumns.map(({day,index})=>[String(day),cents(row[index])]))});continue;}
   if(name){current={name,parent:Object.fromEntries(dayColumns.map(({day,index})=>[String(day),cents(row[index])])),issues:[]};people.push(current);}
  }
@@ -37,7 +38,7 @@ const nameTokens=(value:string)=>normalize(displayName(value)).replace(/[^A-Z0-9
 const nameKey=(value:string)=>nameTokens(value).sort().join(' ');
 export function findJiraPerson(person:Pick<Person,'name'>,records:JiraPerson[]){
  const exact=nameKey(person.name);const exactMatch=records.find(record=>nameKey(record.name)===exact);if(exactMatch)return exactMatch;
- const pdfTokens=nameTokens(person.name);const scored=records.map(record=>{const jiraTokens=nameTokens(record.name);const pdfIncluded=pdfTokens.every(token=>jiraTokens.includes(token));const jiraIncluded=jiraTokens.every(token=>pdfTokens.includes(token));return {record,score:pdfIncluded?100+pdfTokens.length:jiraIncluded?90+jiraTokens.length:0};}).filter(result=>result.score>0).sort((a,b)=>b.score-a.score);
+ const pdfTokens=nameTokens(person.name);const scored=records.map(record=>{const jiraTokens=nameTokens(record.name);const pdfIncluded=pdfTokens.every(token=>jiraTokens.includes(token));const jiraIncluded=jiraTokens.every(token=>pdfTokens.includes(token));const truncated=pdfTokens.length>1&&jiraTokens.some(token=>pdfTokens.includes(token))&&pdfTokens.every(token=>jiraTokens.includes(token)||jiraTokens.some(jiraToken=>jiraToken.length===1&&token.startsWith(jiraToken)));const inIssues=pdfTokens.length>1&&(record.issues??[]).some(issue=>{const issueTokens=nameTokens(issue);return pdfTokens.every(token=>issueTokens.includes(token));});return {record,score:pdfIncluded?100+pdfTokens.length:jiraIncluded?90+jiraTokens.length:truncated?80+pdfTokens.length:inIssues?70:0};}).filter(result=>result.score>0).sort((a,b)=>b.score-a.score);
  if(!scored.length||scored[0].score===scored[1]?.score)return undefined;return scored[0].record;
 }
 export function jiraDifferences(person:Person,jira:JiraPerson|undefined,month:string,holidays:Record<string,string>){

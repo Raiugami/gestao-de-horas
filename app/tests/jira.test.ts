@@ -110,3 +110,11 @@ test('does not guess when an abbreviated name is ambiguous',()=>{
  const records=[{name:'Ana Silva',days:{},issues:[],justifications:{},total:0},{name:'Ana Santos',days:{},issues:[],justifications:{},total:0}];
  assert.equal(findJiraPerson({name:'Ana'},records),undefined);
 });
+
+test('matches Jira names truncated by the export and ignores total rows',()=>{
+ const data=workbook([['October-26',null,null,null,'01'],['Name','Issue','Total','%','Thu'],['Antonio Do Espirito Santo De A, Gabriel',null,8,100,8],[null,'VBRAMO-1 - Gabriel Aguiar - Suporte',8,100,8],['Outra Pessoa',null,8,100,8],[null,'VBRAMO-2 - Projeto',8,100,8],['Daily hours total:',null,16,null,16],['Weekly hours total',null,16,null,16]]);
+ const result=parseJiraWorkbook(data.buffer.slice(data.byteOffset,data.byteOffset+data.byteLength),'export.xls');
+ assert.equal(result.people.length,2);
+ assert.equal(findJiraPerson({name:'Gabriel Aguiar'},result.people)?.name,'Antonio Do Espirito Santo De A, Gabriel');
+ assert.equal(findJiraPerson({name:'Gabriel Souza'},result.people),undefined);
+});
