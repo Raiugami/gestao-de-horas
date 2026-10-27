@@ -45,7 +45,7 @@ export default function Home(){
    if(!/\.pdf$/i.test(file.name)){errors.push(`${file.name}: selecione um PDF.`);continue;}
    if(accumulated.length>=200){errors.push('Limite de 200 pessoas por conferência.');break;}
    try{const record=await readPdf(file,month,setProgress);if(accumulated.some(p=>p.hash===record.hash)){errors.push(`${file.name}: conteúdo já importado; duplicata ignorada.`);continue;}
-    if(accumulated.some(p=>p.name.trim().toLowerCase()===record.name.trim().toLowerCase())){errors.push(`${file.name}: já existe uma pessoa com esse nome. Remova a versão anterior nos detalhes antes de substituir.`);continue;}
+    if(accumulated.some(p=>displayName(p.name).toLowerCase()===displayName(record.name).toLowerCase())){errors.push(`${file.name}: já existe uma pessoa com esse nome. Remova a versão anterior nos detalhes antes de substituir.`);continue;}
     accumulated.push(record);setPeople([...accumulated]);
    }catch(e){if(e instanceof ImageOnlyPdfError){rejected.push(e.collaborator);continue;}errors.push(`${file.name}: ${e instanceof Error?e.message:'Não foi possível ler o PDF.'}`);}
   }}catch{errors.push('Não foi possível iniciar a leitura. Recarregue a aplicação e tente novamente.');}finally{setMessages(errors);setImageRejected(rejected);setProgress('');setPercent(100);setBusy(false);busyRef.current=false;if(fileRef.current)fileRef.current.value='';}
