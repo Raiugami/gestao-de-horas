@@ -67,7 +67,7 @@ Para validar o empacotamento do GitHub Pages, use `NEXT_PUBLIC_BASE_PATH=/gestao
 
 ## Estado publicado
 
-Em 14/10/2026, a branch `main` de `Raiugami/gestao-de-horas` contém o commit `073193f` (`Render sidebar brand logo inline`), publicado com sucesso pelo workflow do GitHub Pages. A validação local mais recente teve 40 testes aprovados, typecheck, lint do componente da sidebar e build. O log do deploy é https://github.com/Raiugami/gestao-de-horas/actions/runs/38647287153.
+Em 27/10/2026, a branch `main` de `Raiugami/gestao-de-horas` contém o commit `4fbb962` (`Corrige pareamento de nomes truncados do Jira`), publicado com sucesso pelo workflow do GitHub Pages. A validação local mais recente teve 41 testes aprovados, typecheck e build. O lint geral ainda aponta erros anteriores a este commit em `tests/audit.test.ts`, `tests/jira.test.ts` e `components/ui/chart.tsx`. O log do deploy é https://github.com/Raiugami/gestao-de-horas/actions/runs/40525436553.
 
 O OCR e os parsers são cobertos por PDFs sintéticos e casos de regressão conhecidos, mas nenhum conjunto de testes garante todo layout futuro. Ao alterar leitura/calculadora, acrescente casos generalizáveis de regressão; não codifique solução limitada a um mês ou a uma pessoa. Mantenha a validação humana de OCR.
 
