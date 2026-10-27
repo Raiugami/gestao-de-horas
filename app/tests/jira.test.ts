@@ -1,6 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as XLSX from 'xlsx';
+import {summary} from '../lib/audit';
 import {parseJiraWorkbook,findJiraPerson,jiraDifferences,jiraCategoriesForDay,jiraJustificationHoursForDay} from '../lib/jira';
 
 function workbook(rows:unknown[][]){
@@ -124,4 +125,15 @@ test('days with hours in the PDF and none in Jira are not flagged',()=>{
  const jira={name:'Pessoa',days:{'1':0,'2':800},issues:[],justifications:{},total:800};
  const diff=jiraDifferences(person,jira,'2026-09',{});
  assert.deepEqual(diff.days,[2]);assert.equal(diff.missingInJira,0);
+});
+
+test('treats training Jira issues as justification alongside absence',()=>{
+ const data=workbook([['September-26',null,null,null,'01'],['Name','Issue','Total','%','Tue'],['Pessoa',null,8,100,8],[null,'VBRAMO-1 - Projeto',3,38,3],[null,'VBRAMO-29010 - Training - Others (Not Integrated)',1,12,1],[null,'VBRAMO-27650-Ausência: Pessoa',4,50,4]]);
+ const jira=parseJiraWorkbook(data.buffer.slice(data.byteOffset,data.byteOffset+data.byteLength),'export.xls').people[0];
+ assert.deepEqual(jiraCategoriesForDay(jira,'1').sort(),['atestado','treinamento']);assert.equal(jiraJustificationHoursForDay(jira,'1'),500);
+ const person={name:'Pessoa',days:[{day:1,weekday:2,cents:300,entries:[300],evidence:'',nonLabor:false}],warnings:[],ocr:false,ocrReviewed:false,exceptions:{},corrections:{}} as any;
+ const diff=jiraDifferences(person,jira,'2026-09',{});
+ assert.equal(diff.different,0);
+ const s=summary(person,'2026-09',{},{'1':{hours:500,jiraHours:800}});
+ assert.equal(s.pending,0);
 });
