@@ -32,7 +32,8 @@ export function parsePages(pages:string[],month:string){
   const entries=matches.map(m=>toCents(m[1]));
   let cents:number|null=entries.length&&entries.every(x=>x!==null)?entries.reduce<number>((a,b)=>a+(b??0),0):nonLabor?0:null;
   let issue:string|undefined;
-  if(statusCount!==matches.length||entries.some(x=>x===null)||(!entries.length&&!nonLabor)){cents=null;issue='Não foi possível ler todos os lançamentos deste dia.';}
+  const rawRows=[...evidence.matchAll(/--\s+--\s+\d+(?:[.,]\d+)?\s+[A-Z]/g)].length;
+  if(rawRows>matches.length||statusCount!==matches.length||entries.some(x=>x===null)||(!entries.length&&!nonLabor)){cents=null;issue='Não foi possível ler todos os lançamentos deste dia.';}
   if(cents!==null&&cents>2400){cents=null;issue='Total diário fora do intervalo esperado para leitura.';}
   if(weekdays[marker[2]]!==weekDay(month,day)){issue='Dia da semana incompatível com o mês selecionado.';warnings.push('O calendário do PDF não corresponde ao mês selecionado.');}
   if(i>0&&day<Number(markers[i-1][1]))warnings.push('A sequência de dias do PDF está fora de ordem.');
