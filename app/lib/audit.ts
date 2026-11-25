@@ -1,4 +1,4 @@
-export type Day = { day:number; weekday:number; cents:number|null; entries:number[]; evidence:string; issue?:string; nonLabor:boolean; vacation?:boolean };
+export type Day = { day:number; weekday:number; cents:number|null; entries:number[]; evidence:string; issue?:string; nonLabor:boolean; vacation?:boolean; courseCents?:number };
 export type Person = { id:string; name:string; fileName:string; hash:string; days:Day[]; warnings:string[]; ocr:boolean; ocrReviewed:boolean; importedAt:string; pageCount:number; exceptions:Record<string,string>; corrections:Record<string,{cents:number;reason:string}> };
 export const normalize=(s:string)=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/\s+/g,' ').trim();
 export const displayName=(s:string)=>s.replace(/\.pdf$/i,'').replace(/[_-]+/g,' ').replace(/([A-ZÀ-ÖØ-Þ][a-zà-öø-ÿ]+?)(de|da|do|dos|das)(?=[A-ZÀ-ÖØ-Þ])/g,'$1 $2 ').replace(/([a-zà-öø-ÿ])([A-ZÀ-ÖØ-Þ])/g,'$1 $2').replace(/\bDEDICACIONES(?:\s+.*)?$/i,'').replace(/\s+(?:SET|SEP|SEPT|SETEMBRO|SEPTIEMBRE)[\s_-]*\d{2,4}$/i,'').replace(/\s*\(\d{1,2}\)\s*$/,'').replace(/\s+\d{1,2}$/,'').replace(/\s+/g,' ').trim().replace(/\b(De|Da|Do|Dos|Das)\b/g,word=>word.toLowerCase());
@@ -29,6 +29,7 @@ export function parsePages(pages:string[],month:string){
   const statusCount=[...evidence.matchAll(/\b(?:(?<=--\s+--\s+\d+(?:[.,]\d+)?\s+)(?:FORMA(?:(?:C|\uFFFD)(?:A|\uFFFD)O|CION|\uFFFDION)|VACACIONES)|SEM\s+(?:VALIDAR|IMPUTAR)|SIN\s+(?:VISAR|IMPUTAR)|VALIDAD[OA]S?|VISAD[OA]S?|APROVAD[OA]S?|FERIAS|F(?:E|\uFFFD)RIAS)(?![A-Z])/g)].length;
   const nonLabor=/\b(?:NA[OG0] LABORAL|NO LABORABLE)\b/.test(evidence);
   const vacation=/\b(?:FERIAS|F(?:E|\uFFFD)RIAS|VACACIONES)\b/.test(evidence);
+  const courseCents=[...evidence.matchAll(/(?:^|\s)F2000\s.*?--\s+--\s+(\d+(?:[.,]\d+)?)\s/g)].reduce((a,m)=>a+(toCents(m[1])??0),0);
   const entries=matches.map(m=>toCents(m[1]));
   let cents:number|null=entries.length&&entries.every(x=>x!==null)?entries.reduce<number>((a,b)=>a+(b??0),0):nonLabor?0:null;
   let issue:string|undefined;
@@ -37,7 +38,7 @@ export function parsePages(pages:string[],month:string){
   if(cents!==null&&cents>2400){cents=null;issue='Total diário fora do intervalo esperado para leitura.';}
   if(weekdays[marker[2]]!==weekDay(month,day)){issue='Dia da semana incompatível com o mês selecionado.';warnings.push('O calendário do PDF não corresponde ao mês selecionado.');}
   if(i>0&&day<Number(markers[i-1][1]))warnings.push('A sequência de dias do PDF está fora de ordem.');
-  days.push({day,weekday:weekdays[marker[2]],cents,entries:entries.filter((x):x is number=>x!==null),evidence,issue,nonLabor,vacation});
+  days.push({day,weekday:weekdays[marker[2]],cents,entries:entries.filter((x):x is number=>x!==null),evidence,issue,nonLabor,vacation,courseCents:courseCents||undefined});
  }
  for(let day=1;day<=numDays;day++)if(!seen.has(day))days.push({day,weekday:weekDay(month,day),cents:null,entries:[],evidence:'Dia não identificado no PDF.',issue:'Dia não identificado no PDF.',nonLabor:false});
  if(seen.size!==numDays)warnings.push(`${seen.size} de ${numDays} dias reconhecidos. Os demais precisam de revisão.`);

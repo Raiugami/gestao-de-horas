@@ -1987,3 +1987,45 @@ main {
   [data-slot='table-container']:not(.table-wrap *) tbody td:nth-child(3)::before { content: 'Divergências'; }
   [data-slot='table-container']:not(.table-wrap *) tbody td:nth-child(4)::before { content: 'Situação'; }
 }
+
+/* Horas de curso (F2000) */
+.dot.course-dot {
+  background: transparent;
+  border: 1.5px dashed var(--brand-wine, #480e2a);
+  box-sizing: border-box;
+}
+.daybutton.has-course {
+  position: relative;
+  outline: 1.5px dashed var(--brand-wine, #480e2a);
+  outline-offset: 1px;
+}
+.daybutton.has-course::after {
+  content: 'C';
+  position: absolute;
+  top: -6px;
+  right: -5px;
+  padding: 1px 3px;
+  border-radius: 2px;
+  background: var(--brand-wine, #480e2a);
+  color: #fff;
+  font-size: 8px;
+  line-height: 1;
+}
+.badge.course-badge {
+  background: #f1e9ed;
+  color: #480e2a;
+  border: 1px dashed #480e2a;
+}
+[data-theme='dark'] .daybutton.has-course,
+[data-theme='dark'] .badge.course-badge {
+  outline-color: #e3b7cb;
+  border-color: #e3b7cb;
+}
+[data-theme='dark'] .daybutton.has-course::after {
+  background: #e3b7cb;
+  color: #260717;
+}
+[data-theme='dark'] .badge.course-badge {
+  background: #3b1a2b;
+  color: #f1d4e1;
+}
