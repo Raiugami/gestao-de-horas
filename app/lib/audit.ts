@@ -14,7 +14,7 @@ export const hours=(cents:number)=>new Intl.NumberFormat('pt-BR',{maximumFractio
 export const toCents=(s:string)=>{if(!/^\d+(?:[.,]\d{1,2})?$/.test(s.trim()))return null; const n=Math.round(Number(s.replace(',','.'))*100);return Number.isSafeInteger(n)&&n>=0&&n<=2400?n:null};
 const weekdays:Record<string,number>={DOMINGO:0,SEGUNDA:1,LUNES:1,TERCA:2,MARTES:2,QUARTA:3,MIERCOLES:3,QUINTA:4,JUEVES:4,SEXTA:5,VIERNES:5,SABADO:6};
 export function parsePages(pages:string[],month:string){
- const text=normalize(pages.join('\n'));
+ const text=normalize(pages.join('\n').replace(/(\p{L}) +([À-ÖØ-öø-ÿ]+) +(?=\p{L})/gu,'$1$2'));
  const markers=[...text.matchAll(/(?:^|\s)(\d{1,2})\s*(SEGUNDA|TERCA|QUARTA|QUINTA|SEXTA|SABADO|DOMINGO|LUNES|MARTES|MIERCOLES|JUEVES|VIERNES)(?:\s*-?\s*FEIRA)?/g)];
  const days:Day[]=[];const warnings:string[]=[];
  const numDays=monthDays(month);
