@@ -2029,3 +2029,14 @@ main {
   background: #3b1a2b;
   color: #f1d4e1;
 }
+
+.daybutton.course-ok {
+  background: #e0f2f1;
+  color: #0b6b6b;
+  border: 1px solid #138a8a;
+}
+[data-theme='dark'] .daybutton.course-ok {
+  background: #12383a;
+  color: #7fdcd8;
+  border-color: #2fb3ae;
+}
